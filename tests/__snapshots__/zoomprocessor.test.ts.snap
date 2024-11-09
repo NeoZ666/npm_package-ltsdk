@@ -13,8 +13,8 @@ exports[`fetch and process Zoom data 1`] = `
       "totalTime": 1377,
     },
     {
-      "LTId": "LT009",
-      "email": "cmsrecuerdo@gmail.com",
+      "LTId": "NaN",
+      "email": "NaN",
       "joinTime": 1730563258000,
       "leaveTime": 1730563262000,
       "name": "Ciel",
@@ -37,8 +37,8 @@ exports[`fetch and process Zoom data 1`] = `
       "totalTime": 67,
     },
     {
-      "LTId": "LT007",
-      "email": "2021.harsh.jain@ves.ac.in",
+      "LTId": "NaN",
+      "email": "NaN",
       "joinTime": 1730563578000,
       "leaveTime": 1730563592000,
       "name": "Harsh Sinyal",

@@ -366,7 +366,6 @@ export async function run(accountId: string, clientId: string, clientSecret: str
     const participantMap = await processParticipantsAndPollsData(
       participantsResponse.data.participants,
       scores,
-      // JSON.parse(emailMappings),
     );
 
     const processedData = await saveProcessedDataToFile(participantMap, meetingId);

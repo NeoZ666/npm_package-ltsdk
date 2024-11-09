@@ -132,7 +132,6 @@ export function getPastMeetingPolls(
 export function processParticipantsAndPollsData(
   participants: ZoomParticipant[],
   pollScores: ParticipantScore[],
-  emailMappings: EmailMap
 ): Map<string, ParticipantData>;
 
 export function saveProcessedDataToFile(
