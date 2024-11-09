@@ -15,7 +15,6 @@ interface ZoomParticipantsResponse {
   total_records: number;
 }
 
-// Comes from /meetings/:meetingId/polls
 interface ZoomPollsQuestion {
   total_records: number;
   polls: PollQuestions[];
@@ -50,7 +49,6 @@ interface Pollquestion {
   case_sensitive?: boolean;
 }
 
-// Comes from /past_meetings/:meetingId/polls
 interface ZoomPollsResponse {
   id: number;
   uuid: string;
@@ -104,13 +102,10 @@ interface ParticipantData {
   leaveTime: number;
   email: string;
   LTId: string;
-  pollAnswers: ParticipantScore[];
-  // engagement: Engagement[];
+  total_score: number;
+  attempted: number;
+  total_questions: number;
 }
-
-// interface Engagement {
-//   chat: string
-// }
 
 async function getZoomAccessToken(
   accountId: string,
@@ -212,7 +207,7 @@ async function getPastMeetingPolls(
 
 function processParticipantsAndPollsData(
   participants: ZoomParticipant[],
-  pollScores: ParticipantScore[],
+  pollScores: Map<string, ParticipantData>,
 ): Map<string, ParticipantData> { 
   const participantMap = new Map<string, ParticipantData>();
 
@@ -225,7 +220,6 @@ function processParticipantsAndPollsData(
 
     const mappingData = { Email: participant.user_email || 'NaN', LTId: 'NaN' };
 
-
     if (participantMap.has(name)) {
       participantMap.get(name)!.totalTime += duration;
     } else {
@@ -235,16 +229,20 @@ function processParticipantsAndPollsData(
         leaveTime: leaveTime,
         email: mappingData.Email,
         LTId: mappingData.LTId,
-        pollAnswers: []
+        total_score: 0,
+        attempted: 0,
+        total_questions: 0,
       });
     }
   });
 
   // Process poll scores and connect them with participant data
-  pollScores.forEach(person => {
-    const participantData = participantMap.get(person.name);
+  pollScores.forEach((data, name) => {
+    const participantData = participantMap.get(name);
     if (participantData) {
-      participantData.pollAnswers.push(person);
+      participantData.total_score = data.total_score;
+      participantData.attempted = data.attempted;
+      participantData.total_questions = data.total_questions;
     }
   });
 
@@ -252,7 +250,7 @@ function processParticipantsAndPollsData(
 }
 
 function saveProcessedDataToFile(
-  data : Map<string, ParticipantData>,
+  data: Map<string, ParticipantData>,
   meetingId: string,
 ): any {
   const processedData = {
@@ -264,11 +262,9 @@ function saveProcessedDataToFile(
       leaveTime: participantData.leaveTime,
       email: participantData.email,
       LTId: participantData.LTId,
-      pollAnswers: participantData.pollAnswers.map(answer => ({
-        total_score: answer.total_score,
-        attempted: answer.attempted,
-        total_questions: answer.total_questions,
-      }))
+      total_score: participantData.total_score, // Include total score independently
+      attempted: participantData.attempted, // Include attempted independently
+      total_questions: participantData.total_questions, // Include total questions independently
     }))
   };
 
@@ -277,17 +273,20 @@ function saveProcessedDataToFile(
 
 // POLLS ANSWER CALCULATION 
 
-function calculateScore(pollsQuestionsResponse: ZoomPollsQuestion, pollsAnswers: ZoomPollsResponse): ParticipantScore[] {
-  // Initialize a participantScores array
-  const participantScores: ParticipantScore[] = [];
+function calculateScore(pollsQuestionsResponse: ZoomPollsQuestion, pollsAnswers: ZoomPollsResponse): Map<string, ParticipantData> {
+  const participantMap = new Map<string, ParticipantData>();
 
   // Iterate over participants in pollAnswers
   pollsAnswers.questions.forEach((participant) => {
-    const participantScore: ParticipantScore = {
-      name: participant.name,
+    const participantData: ParticipantData = {
+      totalTime: 0,
+      joinTime: 0,
+      leaveTime: 0,
+      email: '',
+      LTId: '',
       total_score: 0,
+      attempted: 0,
       total_questions: 0,
-      attempted: 0
     };
 
     // Iterate over the participant's answers
@@ -295,7 +294,6 @@ function calculateScore(pollsQuestionsResponse: ZoomPollsQuestion, pollsAnswers:
       const pollQuestion = pollsQuestionsResponse.polls.find(poll => poll.id === responseDetail.polling_id);
 
       if (pollQuestion) {
-
         const question = pollQuestion.questions.find(q => q.name == responseDetail.question);
         const scoreObj: Scores = {
           title: pollQuestion.title,
@@ -304,36 +302,33 @@ function calculateScore(pollsQuestionsResponse: ZoomPollsQuestion, pollsAnswers:
         };
 
         if (question) {
-          participantScore.attempted++;  // Increment attempted for every question
+          participantData.attempted++;  // Increment attempted for every question
 
           if (!question.right_answers) {
             // Case 1: If no answer is required, increment score and total
             scoreObj.score++;
-            participantScore.total_score++;
+            participantData.total_score++;
           } else {
             // Case 2: If an answer exists, compare it with the right answer
             if (question.right_answers.includes(responseDetail.answer)) {
               scoreObj.score++;  // Increment score if the answer is correct
-              participantScore.total_score++;  // Increment total score
+              participantData.total_score++;  // Increment total score
             }
           }
         }
-        participantScore.total_questions = participantScore.attempted;
+        participantData.total_questions = participantData.attempted;
       }
     });
 
-    // Push the calculated participant score to the array
-    participantScores.push(participantScore);
+    // Add the participant data to the map
+    participantMap.set(participant.name, participantData);
   });
 
-  // Return the participantScores array
-  return participantScores;
+  return participantMap;
 }
 
 export async function run(accountId: string, clientId: string, clientSecret: string, meetingId: string) {
   const baseUrl = "https://api.zoom.us/v2";
-  // const meetingId = "82339006452";
-  // const emailMappingsPath = path.join(__dirname, 'downloads', 'mails.json');
 
   try {
     // Step 0 : Call Zoom Oauth for Access Token
@@ -363,12 +358,12 @@ export async function run(accountId: string, clientId: string, clientSecret: str
 
     // Step 6: Process and combine the data
     console.log("\nProcessing and combining participant and poll data with email mappings...");
-    const participantMap = await processParticipantsAndPollsData(
+    const participantMap = processParticipantsAndPollsData(
       participantsResponse.data.participants,
       scores,
     );
 
-    const processedData = await saveProcessedDataToFile(participantMap, meetingId);
+    const processedData = saveProcessedDataToFile(participantMap, meetingId);
 
     // Step 7: Output processedData
     return processedData;

@@ -1,6 +1,6 @@
 {
   "name": "ltsdk-1",
-  "version": "1.0.3",
+  "version": "1.0.0",
   "description": "Learning Tokens SDK",
   "main": "dist/src/index.js",
   "types": "types/index.d.ts",

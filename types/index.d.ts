@@ -102,7 +102,9 @@ export interface ParticipantData {
   leaveTime: number;
   email: string;
   LTId: string;
-  pollAnswers: ParticipantScore[];
+  total_score: number;
+  attempted: number;
+  total_questions: number;
 }
 
 export function getZoomAccessToken(
@@ -131,23 +133,22 @@ export function getPastMeetingPolls(
 
 export function processParticipantsAndPollsData(
   participants: ZoomParticipant[],
-  pollScores: ParticipantScore[],
+  pollScores: Map<string, ParticipantData>
 ): Map<string, ParticipantData>;
-
-export function saveProcessedDataToFile(
-  data: Map<string, ParticipantData>,
-  outputPath: string,
-  meetingId: string
-): any;
 
 export function calculateScore(
   pollsQuestionsResponse: ZoomPollsQuestion,
   pollsAnswers: ZoomPollsResponse
-): ParticipantScore[];
+): Map<string, ParticipantData>;
+
+export function saveProcessedDataToFile(
+  data: Map<string, ParticipantData>,
+  meetingId: string
+): any;
 
 export function run(
   accountId: string,
   clientId: string,
-  clientSecret: string, 
+  clientSecret: string,
   meetingId: string
-): Promise<Map<string, ParticipantData>>;
+): Promise<any>;
