@@ -213,7 +213,6 @@ async function getPastMeetingPolls(
 function processParticipantsAndPollsData(
   participants: ZoomParticipant[],
   pollScores: ParticipantScore[],
-  emailMappings: EmailMap,
 ): Map<string, ParticipantData> { 
   const participantMap = new Map<string, ParticipantData>();
 
@@ -224,8 +223,7 @@ function processParticipantsAndPollsData(
     const leaveTime = new Date(participant.leave_time).getTime();
     const duration = (leaveTime - joinTime) / 1000; // Convert to seconds
 
-    const mappingData = emailMappings[name] || { Email: participant.user_email || 'NaN', LTId: 'NaN' };
-    // const mappingData = { Email: participant.user_email || 'NaN', LTId: 'NaN' };
+    const mappingData = { Email: participant.user_email || 'NaN', LTId: 'NaN' };
 
 
     if (participantMap.has(name)) {
@@ -332,7 +330,7 @@ function calculateScore(pollsQuestionsResponse: ZoomPollsQuestion, pollsAnswers:
   return participantScores;
 }
 
-export async function run(accountId: string, clientId: string, clientSecret: string, emailMappings: string, meetingId: string) {
+export async function run(accountId: string, clientId: string, clientSecret: string, meetingId: string) {
   const baseUrl = "https://api.zoom.us/v2";
   // const meetingId = "82339006452";
   // const emailMappingsPath = path.join(__dirname, 'downloads', 'mails.json');
@@ -368,7 +366,7 @@ export async function run(accountId: string, clientId: string, clientSecret: str
     const participantMap = await processParticipantsAndPollsData(
       participantsResponse.data.participants,
       scores,
-      JSON.parse(emailMappings),
+      // JSON.parse(emailMappings),
     );
 
     const processedData = await saveProcessedDataToFile(participantMap, meetingId);
