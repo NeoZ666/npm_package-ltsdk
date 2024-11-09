@@ -1,0 +1,72 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`fetch and process Zoom data 1`] = `
+{
+  "attendees": [
+    {
+      "LTId": "NaN",
+      "email": "alfonsogovela@mac.com",
+      "joinTime": 1730563038000,
+      "leaveTime": 1730564415000,
+      "name": "Alfonso Govela",
+      "pollAnswers": [],
+      "totalTime": 1377,
+    },
+    {
+      "LTId": "LT009",
+      "email": "cmsrecuerdo@gmail.com",
+      "joinTime": 1730563258000,
+      "leaveTime": 1730563262000,
+      "name": "Ciel",
+      "pollAnswers": [
+        {
+          "attempted": 15,
+          "total_questions": 15,
+          "total_score": 12,
+        },
+      ],
+      "totalTime": 1154,
+    },
+    {
+      "LTId": "NaN",
+      "email": "NaN",
+      "joinTime": 1730563477000,
+      "leaveTime": 1730563495000,
+      "name": "Harsh Jain",
+      "pollAnswers": [],
+      "totalTime": 67,
+    },
+    {
+      "LTId": "LT007",
+      "email": "2021.harsh.jain@ves.ac.in",
+      "joinTime": 1730563578000,
+      "leaveTime": 1730563592000,
+      "name": "Harsh Sinyal",
+      "pollAnswers": [
+        {
+          "attempted": 15,
+          "total_questions": 15,
+          "total_score": 12,
+        },
+      ],
+      "totalTime": 837,
+    },
+    {
+      "LTId": "NaN",
+      "email": "NaN",
+      "joinTime": 1730563622000,
+      "leaveTime": 1730563629000,
+      "name": "Weber Dubois",
+      "pollAnswers": [
+        {
+          "attempted": 15,
+          "total_questions": 15,
+          "total_score": 12,
+        },
+      ],
+      "totalTime": 793,
+    },
+  ],
+  "meetingId": "82339006452",
+}
+`;
